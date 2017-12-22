@@ -1,0 +1,6 @@
+target/
+target/*
+bin/
+bin/*
+.settings/
+.classpath
