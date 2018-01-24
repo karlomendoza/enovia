@@ -2,11 +2,14 @@ package application;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Field;
 
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 
 import com.agile.api.APIException;
 
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
 import javafx.application.Application;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -24,6 +27,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.ProgressIndicator;
 import javafx.scene.control.TextField;
+import javafx.scene.control.Tooltip;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
@@ -34,10 +38,9 @@ import javafx.scene.text.Text;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+import javafx.util.Duration;
 
 public class Main extends Application {
-
-	// TODO implementacion para funcionar con documentos que son urls
 
 	private File metaDataFile;
 	private File directoryWithFile;
@@ -86,9 +89,44 @@ public class Main extends Application {
 				}
 			});
 
-			CheckBox checkFilesAreOnSameFolderAsMetadata = new CheckBox("Documents are on the same folder");
-			checkFilesAreOnSameFolderAsMetadata.setSelected(true);
-			grid.add(checkFilesAreOnSameFolderAsMetadata, 0, 2);
+			final Button resultsButton = new Button("Select results folder");
+			HBox resultsHbBtn = new HBox(10);
+			resultsHbBtn.setAlignment(Pos.BOTTOM_RIGHT);
+			resultsHbBtn.getChildren().add(resultsButton);
+			grid.add(resultsButton, 0, 2);
+
+			TextField resultsPath = new TextField();
+			grid.add(resultsPath, 1, 2);
+
+			resultsButton.setOnAction(new EventHandler<ActionEvent>() {
+				@Override
+				public void handle(final ActionEvent e) {
+					resultsDirectoryFile = directoryChooser.showDialog(primaryStage);
+					if (resultsDirectoryFile != null) {
+						resultsPath.setText(resultsDirectoryFile.getAbsolutePath());
+					} else {
+						resultsPath.setText("");
+					}
+				}
+			});
+
+			Label splitEach = new Label("Split Metadata file in how many rows:");
+			grid.add(splitEach, 0, 3);
+
+			TextField splitMetaDataEachRows = new TextField("10");
+			grid.add(splitMetaDataEachRows, 1, 3);
+
+			Tooltip splitMetaDataEachRowsTooltip = new Tooltip(
+					"After how many matches of actual documents are we splitting "
+							+ "the metadata that will be created, 1,000 recommended for faster import time. 0 for no split");
+			Tooltip.install(splitMetaDataEachRows, splitMetaDataEachRowsTooltip);
+
+			CheckBox validateAttachments = new CheckBox("Validate attachments exists?");
+			validateAttachments.setSelected(false);
+			grid.add(validateAttachments, 0, 4);
+			Tooltip t = new Tooltip(
+					"Selecting this option will validate that the attachment exists in the defined folder, only rows that contain the attachment will be included in the import file");
+			Tooltip.install(validateAttachments, t);
 
 			final Button filesButton = new Button("Open Documents folder");
 			HBox filesHbBtn = new HBox(10);
@@ -96,19 +134,6 @@ public class Main extends Application {
 			filesHbBtn.getChildren().add(filesButton);
 
 			TextField documentsPath = new TextField();
-
-			checkFilesAreOnSameFolderAsMetadata.setOnAction(new EventHandler<ActionEvent>() {
-				@Override
-				public void handle(final ActionEvent e) {
-					if (!checkFilesAreOnSameFolderAsMetadata.isSelected()) {
-						grid.add(filesHbBtn, 0, 3);
-						grid.add(documentsPath, 1, 3);
-					} else {
-						grid.getChildren().remove(filesHbBtn);
-						grid.getChildren().remove(documentsPath);
-					}
-				}
-			});
 
 			filesButton.setOnAction(new EventHandler<ActionEvent>() {
 				@Override
@@ -122,26 +147,31 @@ public class Main extends Application {
 				}
 			});
 
-			Label userName = new Label("Column name with Files Names:");
-			grid.add(userName, 0, 4);
+			Label fileName = new Label("Column with attachments names or path:");
 
 			TextField fileNameColumn = new TextField("info_card_id");
-			grid.add(fileNameColumn, 1, 4);
 
-			Label pw = new Label("Column name with file Extensions:");
-			grid.add(pw, 0, 5);
+			Tooltip fileNameColumnTooltip = new Tooltip(
+					"On the metadata file, the name of the column that contains the names of the attachments.");
+			Tooltip.install(fileNameColumn, fileNameColumnTooltip);
+
+			Label pw = new Label("Column name with attachment Extensions:");
 
 			TextField fileExtensionColumn = new TextField("File Extension");
-			grid.add(fileExtensionColumn, 1, 5);
 
-			Label splitEach = new Label("Split Metadata file in how many rows:");
-			grid.add(splitEach, 0, 7);
+			Tooltip fileExtensionColumnTooltip = new Tooltip(
+					"On the metadata file, the name of the column that contains the extension"
+							+ " type of the attachments, empty if the attachments name already contains the extension.");
+			Tooltip.install(fileExtensionColumn, fileExtensionColumnTooltip);
 
-			TextField splitMetaDataEachRows = new TextField("10");
-			grid.add(splitMetaDataEachRows, 1, 7);
+			Label removeFromPathLabel = new Label("Remove how many \\ from Path:");
+			TextField removeFromPath = new TextField("");
+
+			Tooltip removeFromPathTooltip = new Tooltip(
+					"When the path of the file contains more that what we need, you use this field to remove everything before the number of backslashes input");
+			Tooltip.install(removeFromPath, removeFromPathTooltip);
 
 			// Add elements for indexFileCreation
-			Label headerTitleBlock = new Label("Index file data, Title Block Columns");
 
 			Label objecTypeLabel = new Label("Type of object");
 			ObservableList<String> objecTypeOptions = FXCollections.observableArrayList("CHANGE", "DECLARATION",
@@ -152,11 +182,23 @@ public class Main extends Application {
 			Label numberLabel = new Label("Column name with Title Block Number");
 			TextField numberColumn = new TextField();
 
+			Tooltip numberColumnTooltip = new Tooltip(
+					"On the metadata file, the name of the column that contains the Title Bock Number value (the id on agile)");
+			Tooltip.install(numberColumn, numberColumnTooltip);
+
 			Label revisionLabel = new Label("Column name with Title Block Revision");
 			TextField revisionColumn = new TextField();
 
-			Label pathToFileFromFileVaultLabel = new Label("Path to file from FileVault");
+			Tooltip revisionColumnTooltip = new Tooltip(
+					"On the metadata file, the name of the column that contains the Title Bock Revision value (the revision on agile)");
+			Tooltip.install(revisionColumn, revisionColumnTooltip);
+
+			Label pathToFileFromFileVaultLabel = new Label("Path to document in the FileVault");
 			TextField pathToFileFromFileVault = new TextField();
+
+			Tooltip pathToFileFromFileVaultTooltip = new Tooltip(
+					"When the documents are uploaded into the FileVault, put the path where the documents are. E.g. if documents are on <fileVaultPath>/myTest/, then fill in here myTest/ ");
+			Tooltip.install(pathToFileFromFileVault, pathToFileFromFileVaultTooltip);
 
 			Label importTypeLabel = new Label("Import Type");
 			ObservableList<String> importTypeOptions = FXCollections.observableArrayList("FILE", "INPLACE");
@@ -165,16 +207,34 @@ public class Main extends Application {
 			Label descriptionLabel = new Label("Column name with Description");
 			TextField descriptionColumn = new TextField();
 
-			CheckBox forTesting = new CheckBox("For Testing");
+			Tooltip descriptionColumnTooltip = new Tooltip(
+					"On the metadata file, the name of the column that contains the Description of the document value.");
+			Tooltip.install(descriptionColumn, descriptionColumnTooltip);
 
-			CheckBox createIndexFile = new CheckBox("Create indexFile");
+			CheckBox forTesting = new CheckBox("For Testing");
+			Tooltip forTestingTooltip = new Tooltip(
+					"This will append a random set of numbers to all the Title Block Number references and into the index file if created. This to allow multiple imports.");
+			Tooltip.install(forTesting, forTestingTooltip);
+
+			Label prependStringLabel = new Label("Prepend this for testing:");
+			TextField prependString = new TextField();
+			Tooltip prependStringTooltip = new Tooltip(
+					"This will be prepended to the excel files names and title block number column and in the index file");
+			Tooltip.install(prependString, prependStringTooltip);
+
+			CheckBox createIndexFile = new CheckBox("Create Index File?");
 			createIndexFile.setSelected(false);
-			grid.add(createIndexFile, 0, 8);
+
+			Tooltip createIndexFileToolTip = new Tooltip(
+					"Selecting this option will create the index file used for attaching the documents to agile");
+			Tooltip.install(createIndexFile, createIndexFileToolTip);
+
+			hackTooltipStartTiming(t);
+
 			createIndexFile.setOnAction(new EventHandler<ActionEvent>() {
 				@Override
 				public void handle(final ActionEvent e) {
 					if (createIndexFile.isSelected()) {
-						grid.add(headerTitleBlock, 0, 9);
 						grid.add(objecTypeLabel, 0, 10);
 						grid.add(objecType, 1, 10);
 						if (!forTesting.isSelected()) {
@@ -189,8 +249,8 @@ public class Main extends Application {
 						grid.add(importType, 1, 14);
 						grid.add(descriptionLabel, 0, 15);
 						grid.add(descriptionColumn, 1, 15);
+
 					} else {
-						grid.getChildren().remove(headerTitleBlock);
 						grid.getChildren().remove(objecTypeLabel);
 						grid.getChildren().remove(objecType);
 						if (!forTesting.isSelected()) {
@@ -209,24 +269,77 @@ public class Main extends Application {
 				}
 			});
 
-			final Button resultsButton = new Button("Select results folder");
-			HBox resultsHbBtn = new HBox(10);
-			resultsHbBtn.setAlignment(Pos.BOTTOM_RIGHT);
-			resultsHbBtn.getChildren().add(resultsButton);
-
-			TextField resultsPath = new TextField();
-
-			resultsButton.setOnAction(new EventHandler<ActionEvent>() {
+			validateAttachments.setOnAction(new EventHandler<ActionEvent>() {
 				@Override
 				public void handle(final ActionEvent e) {
-					resultsDirectoryFile = directoryChooser.showDialog(primaryStage);
-					if (directoryWithFile != null) {
-						resultsPath.setText(directoryWithFile.getAbsolutePath());
+					if (validateAttachments.isSelected()) {
+						grid.add(filesHbBtn, 0, 5);
+						grid.add(documentsPath, 1, 5);
+						grid.add(fileName, 0, 6);
+						grid.add(fileNameColumn, 1, 6);
+						grid.add(pw, 0, 7);
+						grid.add(fileExtensionColumn, 1, 7);
+
+						grid.add(removeFromPathLabel, 0, 8);
+						grid.add(removeFromPath, 1, 8);
+
+						grid.add(createIndexFile, 0, 9);
+
 					} else {
-						resultsPath.setText("");
+						grid.getChildren().remove(filesHbBtn);
+						grid.getChildren().remove(documentsPath);
+						grid.getChildren().remove(fileName);
+						grid.getChildren().remove(fileNameColumn);
+						grid.getChildren().remove(pw);
+						grid.getChildren().remove(fileExtensionColumn);
+						grid.getChildren().remove(createIndexFile);
+						grid.getChildren().remove(removeFromPathLabel);
+						grid.getChildren().remove(removeFromPath);
+
+						if (!forTesting.isSelected()) {
+							grid.getChildren().remove(numberLabel);
+							grid.getChildren().remove(numberColumn);
+						}
+
+						if (createIndexFile.isSelected()) {
+							grid.getChildren().remove(objecTypeLabel);
+							grid.getChildren().remove(objecType);
+							grid.getChildren().remove(revisionLabel);
+							grid.getChildren().remove(revisionColumn);
+							grid.getChildren().remove(pathToFileFromFileVaultLabel);
+							grid.getChildren().remove(pathToFileFromFileVault);
+							grid.getChildren().remove(importTypeLabel);
+							grid.getChildren().remove(importType);
+							grid.getChildren().remove(descriptionLabel);
+							grid.getChildren().remove(descriptionColumn);
+						}
+						createIndexFile.setSelected(false);
 					}
 				}
 			});
+
+			grid.add(forTesting, 0, 17);
+			forTesting.setOnAction(new EventHandler<ActionEvent>() {
+				@Override
+				public void handle(final ActionEvent e) {
+					if (forTesting.isSelected() && !createIndexFile.isSelected()) {
+						grid.add(numberLabel, 0, 10);
+						grid.add(numberColumn, 1, 10);
+					} else if (!forTesting.isSelected() && !createIndexFile.isSelected()) {
+						grid.getChildren().remove(numberLabel);
+						grid.getChildren().remove(numberColumn);
+					}
+					if (forTesting.isSelected()) {
+						grid.add(prependStringLabel, 1, 17);
+						grid.add(prependString, 2, 17);
+					} else {
+						grid.getChildren().remove(prependStringLabel);
+						grid.getChildren().remove(prependString);
+					}
+				}
+			});
+
+			// HERE STARTS THE SECOND COLUMN
 
 			Label agileUserNameLabel = new Label("User name");
 			TextField agileUserName = new TextField("kmendoza");
@@ -269,20 +382,6 @@ public class Main extends Application {
 				}
 			});
 
-			grid.add(forTesting, 0, 16);
-			forTesting.setOnAction(new EventHandler<ActionEvent>() {
-				@Override
-				public void handle(final ActionEvent e) {
-					if (forTesting.isSelected() && !createIndexFile.isSelected()) {
-						grid.add(numberLabel, 0, 11);
-						grid.add(numberColumn, 1, 11);
-					} else if (!forTesting.isSelected() && !createIndexFile.isSelected()) {
-						grid.getChildren().remove(numberLabel);
-						grid.getChildren().remove(numberColumn);
-					}
-				}
-			});
-
 			final Button processButton = new Button("Process");
 			HBox processHbBtn = new HBox(10);
 			processHbBtn.setAlignment(Pos.BOTTOM_RIGHT);
@@ -291,29 +390,10 @@ public class Main extends Application {
 			processButton.setOnAction(new EventHandler<ActionEvent>() {
 				@Override
 				public void handle(final ActionEvent e) {
-					if (metaDataFile == null) {
-						// TODO send error message when it all breaks
-					}
 					if (forTesting.isSelected() && numberColumn.getText().equals("")) {
 						displayMessage(AlertType.ERROR,
 								"When \"For testing\" option is selected you need to selecte a \"Column name with Title Block Number\"");
 						return;
-					}
-					if (!checkFilesAreOnSameFolderAsMetadata.isSelected() && directoryWithFile == null) {
-						displayMessage(AlertType.ERROR,
-								"You need to specify either the Directory where the files are or that they are on the same folder");
-						return;
-					}
-					if (checkFilesAreOnSameFolderAsMetadata.isSelected()) {
-						directoryWithFile = new File(
-								metaDataFile.getAbsolutePath().replace(metaDataFile.getName(), ""));
-					}
-
-					if (fileExtensionColumn != null && !fileExtensionColumn.getText().equals("")) {
-						// TODO error mesaje cuando todo truene
-					}
-					if (fileNameColumn != null && !fileNameColumn.getText().equals("")) {
-						// TODO error mesaje cuando todo truene
 					}
 
 					ProgressIndicator pi = new ProgressIndicator();
@@ -330,7 +410,7 @@ public class Main extends Application {
 								importType.getValue(), descriptionColumn.getText(), createIndexFile.isSelected(),
 								agileUserName.getText(), agilePassword.getText(), agileUrl.getText(),
 								agileWorkFlowName.getText(), createChangeOrders.isSelected(), forTesting.isSelected(),
-								resultsDirectoryFile);
+								resultsDirectoryFile, null, validateAttachments.isSelected(), prependString.getText(), removeFromPath.getText());
 
 						try {
 							ImportDataProcessor.processData(formData);
@@ -377,6 +457,23 @@ public class Main extends Application {
 
 	public static void main(String[] args) {
 		launch(args);
+	}
+
+	public static void hackTooltipStartTiming(Tooltip tooltip) {
+		try {
+			Field fieldBehavior = tooltip.getClass().getDeclaredField("BEHAVIOR");
+			fieldBehavior.setAccessible(true);
+			Object objBehavior = fieldBehavior.get(tooltip);
+
+			Field fieldTimer = objBehavior.getClass().getDeclaredField("activationTimer");
+			fieldTimer.setAccessible(true);
+			Timeline objTimer = (Timeline) fieldTimer.get(objBehavior);
+
+			objTimer.getKeyFrames().clear();
+			objTimer.getKeyFrames().add(new KeyFrame(new Duration(250)));
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 
 }

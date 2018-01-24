@@ -64,9 +64,15 @@ public class FormData {
 	private String importType;
 	/**
 	 * if creating the indexFile Column name in the metaDataFile that has the
-	 * description
+	 * description || when using the transformation separator we use this too
 	 */
 	private String descriptionColumn;
+
+	/**
+	 * if creating the indexFile Column name in the metaDataFile that has the
+	 * description
+	 */
+	private String subClassColumn;
 
 	/**
 	 * Tells if we are going to create the index file
@@ -100,18 +106,55 @@ public class FormData {
 	private boolean createChangeOrders;
 
 	/**
+	 * For tasks with only one resultFile, path to that result file.
+	 */
+	private File resultsFile;
+
+	/**
+	 * For whatever you need :)
+	 */
+	private String whatever;
+
+	/**
 	 * indicates if the tools is run for testing, if so, it will prepend all title
 	 * block numbers with a timestamp it will also just make a copy of the files
-	 * instead of moving them, indexFile will have the appropiated prepend also. The
-	 * idea is that you can make multiple tests with "different" data on agile
+	 * instead of moving them, indexFile will have the appropriated prepend also.
+	 * The idea is that you can make multiple tests with "different" data on agile
 	 */
 	private boolean forTesting;
+
+	/**
+	 * flag that indicates to make the validation of the attachments
+	 */
+	private boolean validateAttachments;
+
+	/**
+	 * When forTesting is selected this variable will have the String of characters
+	 * that will be prepended to the excel file name, to the title block number
+	 * columns in the excel into and into the indexFile where the title block number
+	 * so all of them match
+	 */
+	private String prependString;
+
+	/**
+	 * For when all files are not on the same folder, but are on different paths,
+	 * the fileName variable can be pointed to the path of the file And this is used
+	 * to remove excess stuff from the path on the excel
+	 */
+	private int removeFromPath;
+
+	/**
+	 * Variable used on the one on one transformations to split the cell if multiple
+	 * values are set in a single cell.
+	 */
+	private String splitter;
 
 	public FormData(File metaDataFile, File directoryWithFile, String fileExtensionColumn, String fileNameColumn,
 			String splitMetaDataEachRows, String objecType, String numberColumn, String revisionColumn,
 			String pathToFileFromFileVault, String importType, String descriptionColumn, boolean createIndexFile,
 			String userId, String password, String url, String workflowName, boolean createChangeOrders,
-			boolean forTesting, File resultsDirectoryFile) {
+			boolean forTesting, File resultsDirectoryFile, String subClassColumn, boolean validateAttachments,
+			String prependString, String removeFromPath) {
 		this.metaDataFile = metaDataFile;
 		this.directoryWithFile = directoryWithFile;
 		this.fileExtensionColumn = fileExtensionColumn;
@@ -131,6 +174,34 @@ public class FormData {
 		this.createChangeOrders = createChangeOrders;
 		this.forTesting = forTesting;
 		this.resultsDirectoryFile = resultsDirectoryFile;
+		this.subClassColumn = subClassColumn;
+		this.validateAttachments = validateAttachments;
+		this.prependString = prependString;
+		this.removeFromPath = Integer.valueOf(removeFromPath);
+	}
+
+	public FormData(File metaDataFile, File resultsFile, String subClassColumn, String descriptionColumn) {
+		this.metaDataFile = metaDataFile;
+		this.resultsFile = resultsFile;
+		this.subClassColumn = subClassColumn;
+		this.descriptionColumn = descriptionColumn;
+	}
+
+	public FormData(File metaDataFile, String subClassColumn) {
+		this.metaDataFile = metaDataFile;
+		this.subClassColumn = subClassColumn;
+	}
+
+	public FormData(File metaDataFile, File directoryWithFile, String whatever) {
+		this.metaDataFile = metaDataFile;
+		this.directoryWithFile = directoryWithFile;
+		this.whatever = whatever;
+	}
+
+	public FormData(File metaDataFile, String splitter, String whatever) {
+		this.metaDataFile = metaDataFile;
+		this.splitter = splitter;
+		this.whatever = whatever;
 	}
 
 	public File getMetaDataFile() {
@@ -283,5 +354,61 @@ public class FormData {
 
 	public void setResultsDirectoryFile(File resultsDirectoryFile) {
 		this.resultsDirectoryFile = resultsDirectoryFile;
+	}
+
+	public String getSubClassColumn() {
+		return subClassColumn;
+	}
+
+	public void setSubClassColumn(String subClassColumn) {
+		this.subClassColumn = subClassColumn;
+	}
+
+	public File getResultsFile() {
+		return resultsFile;
+	}
+
+	public void setResultsFile(File resultsFile) {
+		this.resultsFile = resultsFile;
+	}
+
+	public String getWhatever() {
+		return whatever;
+	}
+
+	public void setWhatever(String whatever) {
+		this.whatever = whatever;
+	}
+
+	public boolean isValidateAttachments() {
+		return validateAttachments;
+	}
+
+	public void setValidateAttachments(boolean validateAttachments) {
+		this.validateAttachments = validateAttachments;
+	}
+
+	public String getPrependString() {
+		return prependString;
+	}
+
+	public void setPrependString(String prependString) {
+		this.prependString = prependString;
+	}
+
+	public int getRemoveFromPath() {
+		return removeFromPath;
+	}
+
+	public void setRemoveFromPath(int removeFromPath) {
+		this.removeFromPath = removeFromPath;
+	}
+
+	public String getSplitter() {
+		return splitter;
+	}
+
+	public void setSplitter(String splitter) {
+		this.splitter = splitter;
 	}
 }

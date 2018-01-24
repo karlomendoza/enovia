@@ -12,11 +12,13 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.StringJoiner;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.DataFormatter;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -26,8 +28,7 @@ import com.agile.api.APIException;
 
 public class ImportDataProcessor {
 
-	private static final String CREATION_PATH = "\\results\\";
-	private static final String CREATION_PATH_FOR_FILES = CREATION_PATH + "documents\\";
+	private static final String CREATION_PATH_FOR_FILES = "\\attachments\\";
 	private static final String INDEX_FILE_NAME = "indexFile.txt";
 	private static final String BREAK_LINE = "\n";
 
@@ -47,22 +48,25 @@ public class ImportDataProcessor {
 		}
 
 		if (formData.isForTesting()) {
-			prependTestingText = String.valueOf(System.currentTimeMillis()) + "_";
+			if (formData.getPrependString().isEmpty())
+				prependTestingText = String.valueOf(System.currentTimeMillis()) + "_";
+			else
+				prependTestingText = formData.getPrependString();
 		}
 
 		excelType = extension;
 
 		try (Workbook wb = getWorkBook(formData.getMetaDataFile())) {
-			Sheet sheet = wb.getSheetAt(0);
+			Sheet readSheet = wb.getSheetAt(0);
 			Row row;
 			Row headerRow;
 			Cell cell;
 
 			// Load HeaderRow
-			headerRow = sheet.getRow(0);
+			headerRow = readSheet.getRow(0);
 
 			int rows; // No of rows
-			rows = sheet.getPhysicalNumberOfRows();
+			rows = readSheet.getPhysicalNumberOfRows();
 
 			int cols = 0; // No of columns
 			int tmp = 0;
@@ -70,30 +74,30 @@ public class ImportDataProcessor {
 			// This trick ensures that we get the data properly even if it doesn't start
 			// from first few rows
 			for (int i = 0; i < 10 || i < rows; i++) {
-				row = sheet.getRow(i);
+				row = readSheet.getRow(i);
 				if (row != null) {
-					tmp = sheet.getRow(i).getPhysicalNumberOfCells();
+					tmp = readSheet.getRow(i).getPhysicalNumberOfCells();
 					if (tmp > cols)
 						cols = tmp;
 				}
 			}
 
-			Path resultsPath = Paths.get(formData.getDirectoryWithFile().getAbsolutePath() + CREATION_PATH);
+			Path resultsPath = Paths.get(formData.getResultsDirectoryFile().getAbsolutePath());
 			if (!Files.exists(resultsPath)) {
-				Files.createDirectory(Paths.get(formData.getDirectoryWithFile().getAbsolutePath() + CREATION_PATH));
+				Files.createDirectory(resultsPath);
 			}
-			resultsPath = Paths.get(formData.getDirectoryWithFile().getAbsolutePath() + CREATION_PATH_FOR_FILES);
+			resultsPath = Paths.get(formData.getResultsDirectoryFile().getAbsolutePath() + CREATION_PATH_FOR_FILES);
 			if (!Files.exists(resultsPath)) {
-				Files.createDirectory(
-						Paths.get(formData.getDirectoryWithFile().getAbsolutePath() + CREATION_PATH_FOR_FILES));
+				Files.createDirectory(resultsPath);
 			}
 
 			int workBooksCreated = 1;
-			try (BufferedWriter indexFile = new BufferedWriter(new FileWriter(
-					formData.getDirectoryWithFile().getAbsolutePath() + CREATION_PATH + "\\" + INDEX_FILE_NAME))) {
+			try (BufferedWriter indexFile = new BufferedWriter(
+					new FileWriter(formData.getResultsDirectoryFile().getAbsolutePath() + "\\" + INDEX_FILE_NAME))) {
 
 				Workbook writeBook = getWorkBook();
 
+				// Map<String, Sheet> writeSheets = new HashMap<>();
 				Sheet writeSheet = writeBook.createSheet("new sheet");
 
 				int fileNameColumnNumber = -1;
@@ -102,81 +106,99 @@ public class ImportDataProcessor {
 				int revisionColumnNumber = -1;
 				int descriptionColumnNumber = -1;
 
-				int rowsCreated = 0;
+				// int rowsCreated = 0;
 				for (int r = 0; r < rows; r++) {
-					row = sheet.getRow(r);
+					row = readSheet.getRow(r);
 					if (row != null) {
 						// if it's not the header
 						if (r > 0) {
-							String fileName = returnCellValueAsString(row.getCell((int) fileNameColumnNumber));
-							String fileType = "";
-							if (fileExtensionColumNumber >= 0) {
-								fileType = returnCellValueAsString(row.getCell((int) fileExtensionColumNumber));
-							}
 
-							String fullFileName = formatFileName(fileName, fileType);
+							Boolean passedFileExistance = false;
+							String fullFileName = "";
+							if (formData.isValidateAttachments()) {
 
-							File f = new File(formData.getDirectoryWithFile().getAbsolutePath() + "\\" + fullFileName);
-							if ((f.exists() && !f.isDirectory())) {
+								String fileName = returnCellValueAsString(row.getCell((int) fileNameColumnNumber));
+								String fileType = "";
+								if (fileExtensionColumNumber >= 0) {
+									fileType = returnCellValueAsString(row.getCell((int) fileExtensionColumNumber));
+								}
 
-								if (formData.isForTesting()) {
+								fullFileName = formatFileName(fileName, fileType);
+
+								if (formData.getRemoveFromPath() > 0) {
+									StringJoiner sj = new StringJoiner("\\");
+									String[] split = fullFileName.split("\\\\");
+									for (int i = formData.getRemoveFromPath(); i < split.length; i++) {
+										sj.add(split[i]);
+									}
+									fullFileName = sj.toString();
+								}
+
+								File f = new File(
+										formData.getDirectoryWithFile().getAbsolutePath() + "\\" + fullFileName);
+								if ((f.exists() && !f.isDirectory())) {
+									passedFileExistance = true;
+
+									if (formData.getRemoveFromPath() > 0) {
+										Files.createDirectories(
+												Paths.get(formData.getResultsDirectoryFile().getAbsolutePath()
+														+ CREATION_PATH_FOR_FILES + fullFileName).getParent());
+									}
 									Files.copy(
 											Paths.get(formData.getDirectoryWithFile().getAbsolutePath() + "\\"
 													+ fullFileName),
-											Paths.get(formData.getDirectoryWithFile().getAbsolutePath()
-													+ CREATION_PATH_FOR_FILES + fullFileName));
-								} else {
-									Files.move(
-											Paths.get(formData.getDirectoryWithFile().getAbsolutePath() + "\\"
-													+ fullFileName),
-											Paths.get(formData.getDirectoryWithFile().getAbsolutePath()
+											Paths.get(formData.getResultsDirectoryFile().getAbsolutePath()
 													+ CREATION_PATH_FOR_FILES + fullFileName));
 								}
-								Row createRow = writeSheet.createRow((int) rowsCreated);
+							}
+							if (!formData.isValidateAttachments() || passedFileExistance) {
 
-								row = sheet.getRow(r);
+								if (writeSheet.getPhysicalNumberOfRows() == 0) {
+									setCellsValuesToRow(writeSheet.createRow((int) 0), headerRow, cols);
+								}
+
+								Row createRow = writeSheet.createRow((int) writeSheet.getPhysicalNumberOfRows());
 								setCellsValuesToRow(createRow, row, cols);
-								rowsCreated++;
 
-								if (splitEachNRows != 0 && rowsCreated > splitEachNRows) {
-									rowsCreated = 0;
+								if (splitEachNRows != 0 && writeSheet.getPhysicalNumberOfRows() > splitEachNRows) {
 
-									FileOutputStream outputStream = new FileOutputStream(
-											formData.getDirectoryWithFile().getAbsolutePath() + CREATION_PATH
-													+ workBooksCreated + formData.getMetaDataFile().getName());
-									writeBook.write(outputStream);
+									try (FileOutputStream outputStream = new FileOutputStream(
+											formData.getResultsDirectoryFile().getAbsolutePath() + "\\"
+													+ workBooksCreated + formData.getMetaDataFile().getName())) {
+										writeBook.write(outputStream);
+									}
 									writeBook = getWorkBook();
 									writeSheet = writeBook.createSheet("new sheet");
-
-									createRow = writeSheet.createRow((int) rowsCreated);
-									rowsCreated++;
-									setCellsValuesToRow(createRow, headerRow, cols);
 									workBooksCreated++;
-
 								}
 								if (formData.isCreateIndexFile()) {
 									String TITLEBLOCK_NUMBER = prependTestingText
 											+ returnCellValueAsString(row.getCell((int) numberColumnNumber));
-									String REVISION = returnCellValueAsString(row.getCell((int) revisionColumnNumber));
+
+									DataFormatter formatter = new DataFormatter();
+									String REVISION = formatter
+											.formatCellValue(row.getCell((int) revisionColumnNumber));
+
 									String FILEPATH = formData.getPathToFileFromFileVault() + "\\" + fullFileName;
+									if (formData.getPathToFileFromFileVault().isEmpty())
+										FILEPATH = fullFileName;
+									else
+										FILEPATH = formData.getPathToFileFromFileVault() + "\\" + fullFileName;
+
 									String IMPORT_TYPE = formData.getImportType();
 									String DESCRIPTION = returnCellValueAsString(
 											row.getCell((int) descriptionColumnNumber));
 									indexFile.write(formData.getObjecType() + "|" + TITLEBLOCK_NUMBER + "|" + REVISION
 											+ "|" + FILEPATH + "|" + IMPORT_TYPE + "|" + DESCRIPTION + BREAK_LINE);
 								}
-
 							}
 						} else if (r == 0) {
-							Row createRow = writeSheet.createRow((int) rowsCreated);
-							rowsCreated++;
-							setCellsValuesToRow(createRow, row, cols);
-							// get the column number of the fileName and extension
+							// get the column number of the fileName and extension that we need
 							for (int c = 0; c < cols; c++) {
 								cell = row.getCell((int) c);
 								if (cell != null) {
 									String valueString = returnCellValueAsString(cell);
-									// Set the number of the column //TODO we may be able to remove this
+									// Set the number of the column
 									if (valueString.equals(formData.getFileNameColumn()))
 										fileNameColumnNumber = c;
 									if (valueString.equals(formData.getFileExtensionColumn()))
@@ -199,10 +221,12 @@ public class ImportDataProcessor {
 					}
 				}
 
-				FileOutputStream outputStream = new FileOutputStream(formData.getDirectoryWithFile().getAbsolutePath()
-						+ CREATION_PATH + workBooksCreated + formData.getMetaDataFile().getName());
-				writeBook.write(outputStream);
-				writeBook.close();
+				try (FileOutputStream outputStream = new FileOutputStream(
+						formData.getResultsDirectoryFile().getAbsolutePath() + "\\" + workBooksCreated
+								+ formData.getMetaDataFile().getName())) {
+					writeBook.write(outputStream);
+					writeBook.close();
+				}
 
 				// Create the change orders this is done after everything so we don't have to
 				// wait multiple times for the agile connections
@@ -215,9 +239,9 @@ public class ImportDataProcessor {
 					// Rename the files to have it's changeOrder prepended in the name
 					for (int i = 1; i <= changeOrdersNames.size(); i++) {
 						Files.move(
-								Paths.get(formData.getDirectoryWithFile().getAbsolutePath() + CREATION_PATH + i
+								Paths.get(formData.getResultsDirectoryFile().getAbsolutePath() + i
 										+ formData.getMetaDataFile().getName()),
-								Paths.get(formData.getDirectoryWithFile().getAbsolutePath() + CREATION_PATH
+								Paths.get(formData.getResultsDirectoryFile().getAbsolutePath()
 										+ changeOrdersNames.get(i - 1) + "_" + i
 										+ formData.getMetaDataFile().getName()));
 					}
@@ -227,6 +251,7 @@ public class ImportDataProcessor {
 				ioe.printStackTrace();
 			}
 		}
+
 	}
 
 	/**
@@ -259,15 +284,24 @@ public class ImportDataProcessor {
 		for (int c = 0; c < colsNumber; c++) {
 			Cell cell = dataRow.getCell((int) c);
 			if (cell != null) {
+
 				Cell createCell = writeToRow.createCell(c);
-				String value = returnCellValueAsString(cell);
 
 				// when testing is activaded prepend the testing Text to the title block number
 				// values, but not to the header
 				if (numberColumnNumber == c && writeToRow.getRowNum() != 0) {
-					value = prependTestingText + value;
+					String value = returnCellValueAsString(cell);
+					createCell.setCellValue(prependTestingText + value);
+				} else {
+					switch (cell.getCellType()) {
+					case Cell.CELL_TYPE_NUMERIC:
+						createCell.setCellValue(cell.getNumericCellValue());
+						break;
+					case Cell.CELL_TYPE_STRING:
+						createCell.setCellValue(cell.getStringCellValue());
+					}
+
 				}
-				createCell.setCellValue(value);
 			}
 		}
 	}

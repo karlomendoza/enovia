@@ -14,10 +14,6 @@ import com.agile.api.IWorkflow;
 
 public class AgileConnect {
 
-	private static final String url = "http://a934dev1.kalypsocloud.com:7001/Agile";
-	private static final String userId = "kmendoza";
-	private static final String password = "Qwer5678";
-
 	public static List<String> getChangeOrders(String userId, String password, String url, String workflowName,
 			double changeOrdersToCreate) throws APIException {
 
