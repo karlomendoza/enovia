@@ -38,9 +38,11 @@ public class MainSubClassTransformation extends Application {
 
 	private File metaDataFile;
 	private File resultsFile;
+	private File transformationFile;
 
 	FileChooser fileChooser = new FileChooser();
 	FileChooser resultsChooser = new FileChooser();
+	FileChooser transformationChooser = new FileChooser();
 
 	@Override
 	public void start(Stage primaryStage) {
@@ -119,6 +121,44 @@ public class MainSubClassTransformation extends Application {
 					"Column that's going to decide if the row gets added to the results file or not");
 			Tooltip.install(descriptionColumn, descriptionColumnTooltip);
 
+			final Button transformationButton = new Button("Choose Transformations file");
+			HBox trBtn = new HBox(10);
+			trBtn.setAlignment(Pos.BOTTOM_RIGHT);
+			trBtn.getChildren().add(transformationButton);
+			grid.add(trBtn, 0, 5);
+
+			TextField transformationPath = new TextField();
+			grid.add(transformationPath, 1, 5);
+
+			transformationButton.setOnAction(new EventHandler<ActionEvent>() {
+				@Override
+				public void handle(final ActionEvent e) {
+					configureFileChooser(transformationChooser);
+					transformationFile = transformationChooser.showOpenDialog(primaryStage);
+					if (transformationFile != null) {
+						transformationPath.setText(transformationFile.getName());
+					} else {
+						transformationPath.setText("");
+					}
+				}
+			});
+
+			Label sheetLabel = new Label("Sheet with transformations");
+			TextField sheet = new TextField("");
+			grid.add(sheetLabel, 0, 6);
+			grid.add(sheet, 1, 6);
+			Tooltip sheetTooltip = new Tooltip(
+					"The sheet where all the one on one transformation are, they should be in the order of transformFrom and transformTo");
+			Tooltip.install(sheet, sheetTooltip);
+
+			Label splitLabel = new Label("Character used for splitting cells");
+			TextField split = new TextField("");
+			grid.add(splitLabel, 0, 7);
+			grid.add(split, 1, 7);
+			Tooltip splitTooltip = new Tooltip(
+					"If there are multiple stuff to transform in a single cell, this value is used to split those and transform every single result");
+			Tooltip.install(split, splitTooltip);
+
 			final Button processButton = new Button("Process");
 			HBox processHbBtn = new HBox(10);
 			processHbBtn.setAlignment(Pos.BOTTOM_RIGHT);
@@ -133,7 +173,7 @@ public class MainSubClassTransformation extends Application {
 
 					try {
 						FormData formData = new FormData(metaDataFile, resultsFile, subClassColumn.getText(),
-								descriptionColumn.getText());
+								descriptionColumn.getText(), sheet.getText(), split.getText(), transformationFile);
 
 						try {
 							SubClassTransformation.processData(formData);

@@ -149,6 +149,8 @@ public class FormData {
 	 */
 	private String splitter;
 
+	private File transformationFile;
+
 	public FormData(File metaDataFile, File directoryWithFile, String fileExtensionColumn, String fileNameColumn,
 			String splitMetaDataEachRows, String objecType, String numberColumn, String revisionColumn,
 			String pathToFileFromFileVault, String importType, String descriptionColumn, boolean createIndexFile,
@@ -177,14 +179,22 @@ public class FormData {
 		this.subClassColumn = subClassColumn;
 		this.validateAttachments = validateAttachments;
 		this.prependString = prependString;
-		this.removeFromPath = Integer.valueOf(removeFromPath);
+		if (removeFromPath.isEmpty())
+			this.removeFromPath = 0;
+		else
+			this.removeFromPath = Integer.valueOf(removeFromPath);
 	}
 
-	public FormData(File metaDataFile, File resultsFile, String subClassColumn, String descriptionColumn) {
+	public FormData(File metaDataFile, File resultsFile, String subClassColumn, String descriptionColumn,
+			String whatever, String splitter, File transformationFile) {
 		this.metaDataFile = metaDataFile;
 		this.resultsFile = resultsFile;
 		this.subClassColumn = subClassColumn;
 		this.descriptionColumn = descriptionColumn;
+		this.whatever = whatever;
+		this.splitter = splitter;
+		this.transformationFile = transformationFile;
+
 	}
 
 	public FormData(File metaDataFile, String subClassColumn) {
@@ -198,11 +208,11 @@ public class FormData {
 		this.whatever = whatever;
 	}
 
-	public FormData(File metaDataFile, String splitter, String whatever) {
-		this.metaDataFile = metaDataFile;
-		this.splitter = splitter;
-		this.whatever = whatever;
-	}
+	// public FormData(File metaDataFile, String splitter, String whatever) {
+	// this.metaDataFile = metaDataFile;
+	// this.splitter = splitter;
+	// this.whatever = whatever;
+	// }
 
 	public File getMetaDataFile() {
 		return metaDataFile;
@@ -410,5 +420,13 @@ public class FormData {
 
 	public void setSplitter(String splitter) {
 		this.splitter = splitter;
+	}
+
+	public File getTransformationFile() {
+		return transformationFile;
+	}
+
+	public void setTransformationFile(File transformationFile) {
+		this.transformationFile = transformationFile;
 	}
 }

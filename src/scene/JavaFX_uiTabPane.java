@@ -39,14 +39,18 @@ public class JavaFX_uiTabPane extends Application {
 
 		// Create Tabs
 		Tab tabA = new Tab();
-		tabA.setText("Batch Tool");
+		tabA.setText("SubClass Transformation");
 		// Add something in Tab
-		Button tabA_button = new Button("Button@Tab A");
-		tabA.setContent(tabA_button);
+
+		Main main = new Main();
+		StackPane pane = main.load(primaryStage);
+
+		tabA.setContent(pane);
+
 		tabPane.getTabs().add(tabA);
 
 		Tab tabB = new Tab();
-		tabB.setText("SubClass Transformation");
+		tabB.setText("Split Tool");
 		// Add something in Tab
 		StackPane tabB_stack = new StackPane();
 		tabB_stack.setAlignment(Pos.CENTER);
@@ -55,13 +59,31 @@ public class JavaFX_uiTabPane extends Application {
 		tabPane.getTabs().add(tabB);
 
 		Tab tabC = new Tab();
-		tabC.setText("One on One Transformation");
+		tabC.setText("Validation Tool");
 		// Add something in Tab
 		VBox tabC_vBox = new VBox();
 		tabC_vBox.getChildren().addAll(new Button("Button 1@Tab C"), new Button("Button 2@Tab C"),
 				new Button("Button 3@Tab C"), new Button("Button 4@Tab C"));
 		tabC.setContent(tabC_vBox);
 		tabPane.getTabs().add(tabC);
+
+		Tab tabD = new Tab();
+		tabD.setText("Batch tool");
+		// Add something in Tab
+		VBox tabD_vBox = new VBox();
+		tabD_vBox.getChildren().addAll(new Button("Button 1@Tab C"), new Button("Button 2@Tab C"),
+				new Button("Button 3@Tab C"), new Button("Button 4@Tab C"));
+		tabD.setContent(tabD_vBox);
+		tabPane.getTabs().add(tabD);
+
+		Tab tabE = new Tab();
+		tabE.setText("One on One Transformation");
+		// Add something in Tab
+		VBox tabE_vBox = new VBox();
+		tabE_vBox.getChildren().addAll(new Button("Button 1@Tab C"), new Button("Button 2@Tab C"),
+				new Button("Button 3@Tab C"), new Button("Button 4@Tab C"));
+		tabE.setContent(tabE_vBox);
+		tabPane.getTabs().add(tabE);
 
 		mainPane.setCenter(tabPane);
 

@@ -1,8 +1,11 @@
 package application;
 
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
@@ -253,7 +256,63 @@ public class SubClassTransformation {
 		sapDMSTransformation.put("TM-PHY-HCR-XXXX", "Test Method - Physical");
 	}
 
+	public static Map<String, Map<String, String>> loadListData(File transformationFile, String sheetName)
+			throws IOException, InvalidFormatException {
+		Map<String, Map<String, String>> transformationData = new HashMap<>();
+		try (Workbook listDataWorkbook = Utils.getWorkBook(transformationFile)) {
+			Sheet dataListSheet = listDataWorkbook.getSheet(sheetName);
+			Row dataListRow;
+			int dataListCols = 0;
+			int dataListTmp = 0;
+			int numberOfRows = dataListSheet.getPhysicalNumberOfRows();
+
+			for (int i = 0; i < 10 || i < numberOfRows; i++) {
+				dataListRow = dataListSheet.getRow(i);
+				if (dataListRow != null) {
+					dataListTmp = dataListSheet.getRow(i).getPhysicalNumberOfCells();
+					if (dataListTmp > dataListCols)
+						dataListCols = dataListTmp;
+				}
+			}
+
+			List<String> header = new ArrayList<>();
+
+			for (int r = 0; r < numberOfRows; r++) {
+				dataListRow = dataListSheet.getRow(r);
+				if (dataListRow != null) {
+					for (int c = 0; c < dataListCols / 2; c += 2) {
+						Cell cell = dataListRow.getCell((int) c);
+						Cell cell2 = dataListRow.getCell((int) c + 1);
+						if (cell != null && cell2 != null) {
+							String valueString = Utils.returnCellValueAsString(cell);
+							String valueString2 = Utils.returnCellValueAsString(cell2);
+							if (r > 0) {
+								if (!valueString.equals("")) {
+									Map<String, String> map = transformationData.get(header.get(c));
+									map.put(valueString, valueString2);
+								}
+							} else {
+								header.add(valueString);
+								transformationData.put(valueString, new HashMap<String, String>());
+							}
+						}
+					}
+				}
+			}
+		}
+		// return null;
+		return transformationData;
+	}
+
 	public static void processData(FormData formData) throws InvalidFormatException, IOException, APIException {
+
+		Map<String, Map<String, String>> listData = null;
+		Map<Integer, String> columnsToCheck = null;
+		if (formData.getTransformationFile() != null && formData.getTransformationFile().exists()) {
+			listData = loadListData(formData.getTransformationFile(), formData.getWhatever());
+			columnsToCheck = new HashMap<>();
+		}
+
 		try (Workbook wb = Utils.getWorkBook(formData.getMetaDataFile())) {
 			Sheet readSheet = wb.getSheetAt(0);
 			Row row;
@@ -318,8 +377,27 @@ public class SubClassTransformation {
 
 							Cell createCell = writeToRow.createCell(0);
 							createCell.setCellValue(transformTo);
-
 							setCellsValuesToRow(writeToRow, row, cols);
+
+							// one on one transformations
+							if (formData.getTransformationFile() != null && formData.getTransformationFile().exists()) {
+								for (int c = 0; c < cols; c++) {
+									if (columnsToCheck.containsKey(c)) {
+										cell = row.getCell((int) c);
+										if (cell != null) {
+											String valueString = Utils.returnCellValueAsString(cell);
+
+											String[] split = valueString.split(formData.getSplitter());
+
+											for (int i = 0; i < split.length; i++) {
+												Cell writeCell = writeToRow.createCell(cols + i + 1);
+												writeCell.setCellValue(
+														listData.get(columnsToCheck.get(c)).get(split[i]));
+											}
+										}
+									}
+								}
+							}
 
 						} else if (r == 0) {
 							// get the column number of the subClass
@@ -333,6 +411,14 @@ public class SubClassTransformation {
 									}
 									if (valueString.equals(formData.getDescriptionColumn())) {
 										descriptionColumnNumber = c;
+									}
+
+									// one on one transformation stuff
+									if (formData.getTransformationFile() != null
+											&& formData.getTransformationFile().exists()) {
+										if (listData.containsKey(valueString)) {
+											columnsToCheck.put(c, valueString);
+										}
 									}
 								}
 							}
