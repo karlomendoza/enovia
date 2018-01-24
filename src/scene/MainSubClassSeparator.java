@@ -1,4 +1,4 @@
-package application;
+package scene;
 
 import java.io.File;
 import java.io.IOException;
@@ -8,6 +8,8 @@ import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 
 import com.agile.api.APIException;
 
+import application.SubClassSeparator;
+import entities.FormData;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.application.Application;

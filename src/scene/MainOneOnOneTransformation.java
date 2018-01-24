@@ -1,4 +1,4 @@
-package application;
+package scene;
 
 import java.io.File;
 import java.io.IOException;
@@ -6,6 +6,8 @@ import java.lang.reflect.Field;
 
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 
+import application.OneOnOneTransformations;
+import entities.FormData;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.application.Application;
@@ -30,13 +32,12 @@ import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 
-public class MainSubClassValidation extends Application {
+public class MainOneOnOneTransformation extends Application {
 
 	private File metaDataFile;
-	private File listFile;
 
 	FileChooser fileChooser = new FileChooser();
-	FileChooser listChooser = new FileChooser();
+	FileChooser resultsChooser = new FileChooser();
 
 	@Override
 	public void start(Stage primaryStage) {
@@ -56,7 +57,7 @@ public class MainSubClassValidation extends Application {
 			scenetitle.setFont(Font.font("Tahoma", FontWeight.NORMAL, 20));
 			grid.add(scenetitle, 0, 0, 2, 1);
 
-			final Button metadataButton = new Button("Open file to validate");
+			final Button metadataButton = new Button("Open MetaData file");
 			HBox hbBtn = new HBox(10);
 			hbBtn.setAlignment(Pos.BOTTOM_RIGHT);
 			hbBtn.getChildren().add(metadataButton);
@@ -78,34 +79,21 @@ public class MainSubClassValidation extends Application {
 				}
 			});
 
-			final Button listButton = new Button("File with valid List Values");
-			HBox rtBtn = new HBox(10);
-			rtBtn.setAlignment(Pos.BOTTOM_RIGHT);
-			rtBtn.getChildren().add(listButton);
-			grid.add(rtBtn, 0, 2);
+			Label sheetLabel = new Label("Sheet with transformations");
+			TextField sheet = new TextField("");
+			grid.add(sheetLabel, 0, 2);
+			grid.add(sheet, 1, 2);
+			Tooltip sheetTooltip = new Tooltip(
+					"The sheet where all the one on one transformation are, they should be in the order of transformFrom and transformTo");
+			Tooltip.install(sheet, sheetTooltip);
 
-			TextField filePath = new TextField();
-			grid.add(filePath, 1, 2);
-
-			listButton.setOnAction(new EventHandler<ActionEvent>() {
-				@Override
-				public void handle(final ActionEvent e) {
-					configureFileChooser(listChooser);
-					listFile = listChooser.showOpenDialog(primaryStage);
-					if (listFile != null) {
-						filePath.setText(listFile.getName());
-					} else {
-						filePath.setText("");
-					}
-				}
-			});
-
-			Label listSheetLabel = new Label("Sheet name with List Values");
-			TextField listSheet = new TextField("Lists");
-			grid.add(listSheetLabel, 0, 3);
-			grid.add(listSheet, 1, 3);
-			Tooltip listSheetTooltip = new Tooltip("Column that's going to get the transformation applied to");
-			Tooltip.install(listSheet, listSheetTooltip);
+			Label splitLabel = new Label("Character used for splitting cells");
+			TextField split = new TextField("");
+			grid.add(splitLabel, 0, 3);
+			grid.add(split, 1, 3);
+			Tooltip splitTooltip = new Tooltip(
+					"If there are multiple stuff to transform in a single cell, this value is used to split those and transform every single result");
+			Tooltip.install(split, splitTooltip);
 
 			final Button processButton = new Button("Process");
 			HBox processHbBtn = new HBox(10);
@@ -115,16 +103,21 @@ public class MainSubClassValidation extends Application {
 			processButton.setOnAction(new EventHandler<ActionEvent>() {
 				@Override
 				public void handle(final ActionEvent e) {
+					if (metaDataFile == null) {
+						// TODO send error message when it all breaks
+					}
 
 					try {
-						FormData formData = new FormData(metaDataFile, listFile, listSheet.getText());
+						FormData formData = new FormData(metaDataFile, split.getText(), sheet.getText());
 
-						ValidateData.processData(formData);
+						OneOnOneTransformations.processData(formData);
 						displayMessage(AlertType.INFORMATION, "Run succesfully");
 
 					} catch (InvalidFormatException e1) {
+						// TODO Auto-generated catch block
 						e1.printStackTrace();
 					} catch (IOException e1) {
+						// TODO Auto-generated catch block
 						e1.printStackTrace();
 					}
 				}

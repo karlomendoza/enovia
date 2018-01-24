@@ -26,6 +26,9 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import com.agile.api.APIException;
 
+import entities.FormData;
+import utils.Utils;
+
 public class ImportDataProcessor {
 
 	private static final String CREATION_PATH_FOR_FILES = "\\attachments\\";
@@ -117,10 +120,12 @@ public class ImportDataProcessor {
 							String fullFileName = "";
 							if (formData.isValidateAttachments()) {
 
-								String fileName = returnCellValueAsString(row.getCell((int) fileNameColumnNumber));
+								String fileName = Utils
+										.returnCellValueAsString(row.getCell((int) fileNameColumnNumber));
 								String fileType = "";
 								if (fileExtensionColumNumber >= 0) {
-									fileType = returnCellValueAsString(row.getCell((int) fileExtensionColumNumber));
+									fileType = Utils
+											.returnCellValueAsString(row.getCell((int) fileExtensionColumNumber));
 								}
 
 								fullFileName = formatFileName(fileName, fileType);
@@ -173,7 +178,7 @@ public class ImportDataProcessor {
 								}
 								if (formData.isCreateIndexFile()) {
 									String TITLEBLOCK_NUMBER = prependTestingText
-											+ returnCellValueAsString(row.getCell((int) numberColumnNumber));
+											+ Utils.returnCellValueAsString(row.getCell((int) numberColumnNumber));
 
 									DataFormatter formatter = new DataFormatter();
 									String REVISION = formatter
@@ -186,8 +191,8 @@ public class ImportDataProcessor {
 										FILEPATH = formData.getPathToFileFromFileVault() + "\\" + fullFileName;
 
 									String IMPORT_TYPE = formData.getImportType();
-									String DESCRIPTION = returnCellValueAsString(
-											row.getCell((int) descriptionColumnNumber));
+									String DESCRIPTION = Utils
+											.returnCellValueAsString(row.getCell((int) descriptionColumnNumber));
 									indexFile.write(formData.getObjecType() + "|" + TITLEBLOCK_NUMBER + "|" + REVISION
 											+ "|" + FILEPATH + "|" + IMPORT_TYPE + "|" + DESCRIPTION + BREAK_LINE);
 								}
@@ -197,7 +202,7 @@ public class ImportDataProcessor {
 							for (int c = 0; c < cols; c++) {
 								cell = row.getCell((int) c);
 								if (cell != null) {
-									String valueString = returnCellValueAsString(cell);
+									String valueString = Utils.returnCellValueAsString(cell);
 									// Set the number of the column
 									if (valueString.equals(formData.getFileNameColumn()))
 										fileNameColumnNumber = c;
@@ -290,7 +295,7 @@ public class ImportDataProcessor {
 				// when testing is activaded prepend the testing Text to the title block number
 				// values, but not to the header
 				if (numberColumnNumber == c && writeToRow.getRowNum() != 0) {
-					String value = returnCellValueAsString(cell);
+					String value = Utils.returnCellValueAsString(cell);
 					createCell.setCellValue(prependTestingText + value);
 				} else {
 					switch (cell.getCellType()) {
@@ -334,23 +339,5 @@ public class ImportDataProcessor {
 			}
 		}
 		return null;
-	}
-
-	/**
-	 * reads the value from a cell and returns it's value as a String
-	 * 
-	 * @param cell
-	 * @return
-	 */
-	private static String returnCellValueAsString(Cell cell) {
-		if (cell != null) {
-			switch (cell.getCellType()) {
-			case Cell.CELL_TYPE_NUMERIC:
-				return String.valueOf(cell.getNumericCellValue());
-			case Cell.CELL_TYPE_STRING:
-				return cell.getStringCellValue();
-			}
-		}
-		return "";
 	}
 }

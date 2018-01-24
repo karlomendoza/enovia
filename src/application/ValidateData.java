@@ -17,6 +17,9 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.xssf.usermodel.XSSFCellStyle;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
+import entities.FormData;
+import utils.Utils;
+
 public class ValidateData {
 
 	private static XSSFCellStyle style;
@@ -47,7 +50,7 @@ public class ValidateData {
 					for (int c = 0; c < dataListCols; c++) {
 						Cell cell = dataListRow.getCell((int) c);
 						if (cell != null) {
-							String valueString = returnCellValueAsString(cell);
+							String valueString = Utils.returnCellValueAsString(cell);
 							if (r == 0) {
 								if (valueString.equals("")) {
 									valueString = headers.get(c - 1);
@@ -119,7 +122,7 @@ public class ValidateData {
 							if (columnsToCheck.containsKey(c)) {
 								cell = row.getCell((int) c);
 								if (cell != null) {
-									String valueString = returnCellValueAsString(cell);
+									String valueString = Utils.returnCellValueAsString(cell);
 									if (!listData.get(columnsToCheck.get(c)).contains(valueString)) {
 										columnsWithErrorsFound.add(c);
 									}
@@ -140,7 +143,7 @@ public class ValidateData {
 						for (int c = 0; c < cols; c++) {
 							cell = row.getCell((int) c);
 							if (cell != null) {
-								String valueString = returnCellValueAsString(cell);
+								String valueString = Utils.returnCellValueAsString(cell);
 								if (listData.containsKey(valueString)) {
 									columnsToCheck.put(c, valueString);
 								}
@@ -179,26 +182,9 @@ public class ValidateData {
 				if (columnsWithErrorsFound != null && columnsWithErrorsFound.contains(c)) {
 					createCell.setCellStyle(style);
 				}
-				createCell.setCellValue(returnCellValueAsString(cell));
+				createCell.setCellValue(Utils.returnCellValueAsString(cell));
 			}
 		}
 	}
 
-	/**
-	 * reads the value from a cell and returns it's value as a String
-	 * 
-	 * @param cell
-	 * @return
-	 */
-	private static String returnCellValueAsString(Cell cell) {
-		if (cell != null) {
-			switch (cell.getCellType()) {
-			case Cell.CELL_TYPE_NUMERIC:
-				return String.valueOf(cell.getNumericCellValue());
-			case Cell.CELL_TYPE_STRING:
-				return cell.getStringCellValue();
-			}
-		}
-		return "";
-	}
 }

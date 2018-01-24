@@ -1,23 +1,20 @@
 package application;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.commons.io.FilenameUtils;
-import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import com.agile.api.APIException;
+
+import entities.FormData;
+import utils.Utils;
 
 public class SubClassTransformation {
 
@@ -257,7 +254,7 @@ public class SubClassTransformation {
 	}
 
 	public static void processData(FormData formData) throws InvalidFormatException, IOException, APIException {
-		try (Workbook wb = getWorkBook(formData.getMetaDataFile())) {
+		try (Workbook wb = Utils.getWorkBook(formData.getMetaDataFile())) {
 			Sheet readSheet = wb.getSheetAt(0);
 			Row row;
 			Row headerRow;
@@ -284,7 +281,7 @@ public class SubClassTransformation {
 			int subClassColumnToTransfor = -1;
 			int descriptionColumnNumber = -1;
 
-			try (Workbook writeIntoBook = getWorkBook(formData.getResultsFile())) {
+			try (Workbook writeIntoBook = Utils.getWorkBook(formData.getResultsFile())) {
 				Sheet writeSheet = writeIntoBook.getSheetAt(0);
 				if (writeSheet.getPhysicalNumberOfRows() == 0) {
 					Row createRow = writeSheet.createRow(0);
@@ -299,14 +296,15 @@ public class SubClassTransformation {
 						// if it's not the header
 						if (r > 0) {
 
-							String description = returnCellValueAsString(row.getCell((int) descriptionColumnNumber));
+							String description = Utils
+									.returnCellValueAsString(row.getCell((int) descriptionColumnNumber));
 
 							if (description == null || description.equals("")) {
 								continue;
 							}
 
-							String subClassColumnValueToTransform = returnCellValueAsString(
-									row.getCell((int) subClassColumnToTransfor));
+							String subClassColumnValueToTransform = Utils
+									.returnCellValueAsString(row.getCell((int) subClassColumnToTransfor));
 
 							String transformTo = "";
 							for (String key : sapDMSTransformation.keySet()) {
@@ -328,7 +326,7 @@ public class SubClassTransformation {
 							for (int c = 0; c < cols; c++) {
 								cell = row.getCell((int) c);
 								if (cell != null) {
-									String valueString = returnCellValueAsString(cell);
+									String valueString = Utils.returnCellValueAsString(cell);
 									// Set the number of the column
 									if (valueString.equals(formData.getSubClassColumn())) {
 										subClassColumnToTransfor = c;
@@ -352,45 +350,6 @@ public class SubClassTransformation {
 				ex.printStackTrace();
 			}
 		}
-	}
-
-	/**
-	 * Returns a workbook of the same type as the file that gets passed as a
-	 * parameter, works for both xlsx and xls file types
-	 * 
-	 * @param workBookName
-	 * @return
-	 * @throws IOException
-	 * @throws InvalidFormatException
-	 */
-	private static Workbook getWorkBook(File workBookName) throws IOException, InvalidFormatException {
-		String extension = FilenameUtils.getExtension(workBookName.getName());
-
-		if (extension.equalsIgnoreCase("xlsx")) {
-			return new XSSFWorkbook(workBookName);
-		} else if (extension.equalsIgnoreCase("xls")) {
-			InputStream fileToRead = new FileInputStream(workBookName.getAbsolutePath());
-			return new HSSFWorkbook(fileToRead);
-		}
-		return null;
-	}
-
-	/**
-	 * reads the value from a cell and returns it's value as a String
-	 * 
-	 * @param cell
-	 * @return
-	 */
-	private static String returnCellValueAsString(Cell cell) {
-		if (cell != null) {
-			switch (cell.getCellType()) {
-			case Cell.CELL_TYPE_NUMERIC:
-				return String.valueOf(cell.getNumericCellValue());
-			case Cell.CELL_TYPE_STRING:
-				return cell.getStringCellValue();
-			}
-		}
-		return "";
 	}
 
 	/**
