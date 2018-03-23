@@ -140,14 +140,6 @@ public class NumberTransformation {
 											//
 										}
 
-										// DHF- Irrigation Sets-13-001-0106 Design; everything before Design is the number
-										// DHF Manual 11-008-3576; everything before Gravity is the number
-										// DHF Manual IV-11-008-3584 Rev A Design…; everything before Rev is the Number, drop "Rev x" for Name field.
-										// DHF Manual IV-11-008-4331 Borla; everything before Borla is the Number
-										// DHF Manual IV-14-011-0204 PPI; everything before PPI is the Number
-										// DHF-CTH-12-000-0005_; if starts with "DHF" everything before the underscore; drop the underscore for the name
-										// DHF-Blood Sets-13-006-0001 Design; starts with "DHF" everything before the space is the number
-
 										String chart4 = String.valueOf(name.charAt(4));
 										String chart5 = String.valueOf(name.charAt(5));
 										if (chart4.matches("[a-zA-Z]") || chart5.matches("[a-zA-Z]")) {
