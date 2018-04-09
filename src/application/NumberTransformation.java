@@ -18,8 +18,10 @@ import utils.Utils;
 
 public class NumberTransformation {
 
+	static int columnNumberOfNameField = 3;
+
 	public static void main(String... strings) throws InvalidFormatException, IOException {
-		File metaDataFiles = new File("C:\\Users\\Karlo Mendoza\\Excel Work\\ICU MEDICAL\\Enovia\\data\\");
+		File metaDataFiles = new File("C:\\Users\\Karlo Mendoza\\Downloads\\enovia\\");
 
 		processData(metaDataFiles);
 	}
@@ -81,7 +83,7 @@ public class NumberTransformation {
 							// if it's not the header
 							if (r > 0) {
 								Row writeToRow = writeSheet.createRow(writeSheet.getPhysicalNumberOfRows());
-								String name = Utils.returnCellValueAsString(row.getCell((int) 2));
+								String name = Utils.returnCellValueAsString(row.getCell((int) columnNumberOfNameField));
 								String[] split = name.split(" ");
 								String numberValue = split[0];
 								Cell createCell = writeToRow.createCell(2);
