@@ -213,7 +213,7 @@ public class NumberTransformation {
 					}
 				}
 			}
-			File f = new File(metaDataFiles.getParentFile() + "\\Enovia Number Transformation.xlsx");
+			File f = new File(metaDataFiles.getParentFile() + "\\MetaData SubClass Transformed.xlsx");
 			try (FileOutputStream outputStream = new FileOutputStream(f)) {
 				writeIntoBook.write(outputStream);
 			} catch (Exception ex) {
