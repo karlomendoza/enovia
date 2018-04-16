@@ -16,7 +16,6 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 
-import TransformationRules.MasterControlSubclassTransformationRules;
 import utils.Utils;
 
 public class SubClassTransformation {
@@ -41,8 +40,7 @@ public class SubClassTransformation {
 		dates.add(13);
 	}
 
-	public static Map<String, Map<String, String>> loadListData(File transformationFile)
-			throws IOException, InvalidFormatException {
+	public static Map<String, Map<String, String>> loadListData(File transformationFile) throws IOException, InvalidFormatException {
 		Map<String, Map<String, String>> transformationData = new HashMap<>();
 		try (Workbook listDataWorkbook = Utils.getWorkBook(transformationFile)) {
 			Sheet dataListSheet = listDataWorkbook.getSheetAt(0);
@@ -89,8 +87,8 @@ public class SubClassTransformation {
 		return transformationData;
 	}
 
-	public static void processData(File metaDataFiles, File transformationFile, String infoCardTypeColumn,
-			String infoCardSubTypeColumn, String documentNumberColumn) throws InvalidFormatException, IOException {
+	public static void processData(File metaDataFiles, File transformationFile, String infoCardTypeColumn, String infoCardSubTypeColumn,
+			String documentNumberColumn) throws InvalidFormatException, IOException {
 
 		Map<String, Map<String, String>> listData = null;
 		Map<Integer, String> columnsToCheck = null;
@@ -153,10 +151,11 @@ public class SubClassTransformation {
 							// if it's not the header
 							if (r > 0) {
 
-								String transformTo = MasterControlSubclassTransformationRules.subClassTransformation(
-										Utils.returnCellValueAsString(row.getCell((int) infoCardTypeColumnNumber)),
-										Utils.returnCellValueAsString(row.getCell((int) infoCardSubTypeColumnNumber)),
-										Utils.returnCellValueAsString(row.getCell((int) documentNumberColumnNumber)));
+								String transformTo = "";
+								// String transformTo = MasterControlSubclassTransformationRules.subClassTransformation(
+								// Utils.returnCellValueAsString(row.getCell((int) infoCardTypeColumnNumber)),
+								// Utils.returnCellValueAsString(row.getCell((int) infoCardSubTypeColumnNumber)),
+								// Utils.returnCellValueAsString(row.getCell((int) documentNumberColumnNumber)));
 
 								Row writeToRow = writeSheet.createRow(writeSheet.getPhysicalNumberOfRows());
 
@@ -172,8 +171,7 @@ public class SubClassTransformation {
 											if (createCell != null) {
 												String valueString = Utils.returnCellValueAsString(createCell);
 												if (listData.get(columnsToCheck.get(c)).containsKey(valueString)) {
-													createCell.setCellValue(
-															listData.get(columnsToCheck.get(c)).get(valueString));
+													createCell.setCellValue(listData.get(columnsToCheck.get(c)).get(valueString));
 												}
 
 											}
@@ -222,8 +220,8 @@ public class SubClassTransformation {
 	}
 
 	/**
-	 * Gets all the cells from dataRow and copys them in writeToRow, basically it
-	 * copies the whole row, but skips the first one to allow to put the subClass
+	 * Gets all the cells from dataRow and copys them in writeToRow, basically it copies the whole row, but skips the first one to allow to put the
+	 * subClass
 	 * 
 	 * @param writeToRow
 	 * @param dataRow
