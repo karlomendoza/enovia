@@ -18,10 +18,10 @@ import utils.Utils;
 
 public class NumberTransformation {
 
-	static int columnNumberOfNameField = 3;
+	static int columnNumberOfNameField = 0;
 
 	public static void main(String... strings) throws InvalidFormatException, IOException {
-		File metaDataFiles = new File("C:\\Users\\Karlo Mendoza\\Downloads\\enovia\\");
+		File metaDataFiles = new File("C:\\Users\\Karlo Mendoza\\Excel Work\\ICU MEDICAL\\Enovia\\T3\\numberTransformation\\");
 
 		processData(metaDataFiles);
 	}
@@ -204,18 +204,27 @@ public class NumberTransformation {
 											create2Cell.setCellValue(name.replace(name.substring(name.length() - 13), ""));
 
 										} catch (Exception ex2) {
-											createCell.setCellValue("manual transform");
-											create2Cell.setCellValue("manual transform");
+											createCell.setCellValue("");
+											create2Cell.setCellValue("");
 										}
 									}
 								}
+
+								String stringCellValue = createCell.getStringCellValue();
+								String stringCellValue2 = create2Cell.getStringCellValue();
+
+								createCell.setCellValue(stringCellValue.replaceAll(" ", "_"));
+								if (stringCellValue2 == null || stringCellValue2.isEmpty() || stringCellValue2.equals("")) {
+									create2Cell.setCellValue(stringCellValue.replaceAll(" ", "_"));
+								}
+
 								setCellsValuesToRow(writeToRow, row, cols);
 							}
 						}
 					}
 				}
 			}
-			File f = new File(metaDataFiles.getParentFile() + "\\MetaData SubClass Transformed.xlsx");
+			File f = new File(metaDataFiles.getParentFile() + "\\MetaData Number Transformed.xlsx");
 			try (FileOutputStream outputStream = new FileOutputStream(f)) {
 				writeIntoBook.write(outputStream);
 			} catch (Exception ex) {
