@@ -21,7 +21,7 @@ public class NumberTransformation {
 	static int columnNumberOfNameField = 0;
 
 	public static void main(String... strings) throws InvalidFormatException, IOException {
-		File metaDataFiles = new File("C:\\Users\\Karlo Mendoza\\Excel Work\\ICU MEDICAL\\Enovia\\T3\\numberTransformation\\");
+		File metaDataFiles = new File("C:\\Users\\Karlo Mendoza\\Excel Work\\ICU MEDICAL\\Enovia\\T4\\extract\\");
 
 		processData(metaDataFiles);
 	}
@@ -86,9 +86,9 @@ public class NumberTransformation {
 								String name = Utils.returnCellValueAsString(row.getCell((int) columnNumberOfNameField));
 								String[] split = name.split(" ");
 								String numberValue = split[0];
-								Cell createCell = writeToRow.createCell(2);
+								Cell createCell = writeToRow.createCell(0);
 								createCell.setCellValue(name);
-								Cell create2Cell = writeToRow.createCell(3);
+								Cell create2Cell = writeToRow.createCell(1);
 
 								if (name.contains("Change Control") || name.startsWith("CR") || name.startsWith("NC") || name.contains("Audit")
 										|| name.startsWith("TQA") || name.contains("Redline")) {
@@ -209,9 +209,18 @@ public class NumberTransformation {
 										}
 									}
 								}
-
-								String stringCellValue = createCell.getStringCellValue();
-								String stringCellValue2 = create2Cell.getStringCellValue();
+								String stringCellValue;
+								String stringCellValue2;
+								try {
+									stringCellValue = createCell.getStringCellValue();
+								} catch (Exception ex) {
+									stringCellValue = String.valueOf(createCell.getNumericCellValue());
+								}
+								try {
+									stringCellValue2 = create2Cell.getStringCellValue();
+								} catch (Exception ex) {
+									stringCellValue2 = String.valueOf(create2Cell.getNumericCellValue());
+								}
 
 								createCell.setCellValue(stringCellValue.replaceAll(" ", "_"));
 								if (stringCellValue2 == null || stringCellValue2.isEmpty() || stringCellValue2.equals("")) {
@@ -244,14 +253,10 @@ public class NumberTransformation {
 	 */
 	private static void setCellsValuesToRow(Row writeToRow, Row dataRow, int colsNumber) {
 		int i = -1;
-		for (int c = 0; c <= colsNumber; c++) {
+		for (int c = 2; c <= colsNumber; c++) {
 			i++;
 			Cell cell = dataRow.getCell((int) i);
 			if (cell != null) {
-				if (c == 2) {
-					c++;
-					c++;
-				}
 				Cell createCell = writeToRow.createCell(c);
 
 				switch (cell.getCellType()) {

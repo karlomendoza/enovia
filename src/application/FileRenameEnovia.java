@@ -8,7 +8,9 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * One timer for renaming enovia files It reads from an txt with the format OldFileName newFileName
@@ -21,10 +23,12 @@ import java.util.Map;
  */
 public class FileRenameEnovia {
 
-	public static File initialFolder = new File("C:\\Users\\Karlo Mendoza\\Desktop\\enovia_script\\files in here");
-	public static File fileWithNames = new File("C:\\\\Users\\\\Karlo Mendoza\\\\Desktop\\\\enovia_script\\\\new 2.txt");
+	public static File initialFolder = new File("Y:\\RDM 0123 Enovia - Batch 2");
+	public static File fileWithNames = new File("Y:\\RDM 0123 Enovia - Batch 2\\new 2.txt");
 
 	public static Map<String, String> oldNameAndPath = new HashMap<String, String>();
+
+	public static Set<String> filesProccessed = new HashSet();
 
 	public static void main(String... strings) throws IOException {
 
@@ -32,21 +36,33 @@ public class FileRenameEnovia {
 		listFilesForFolder(initialFolder);
 		// end of read
 
+		boolean a = true;
+		if (a) {
+			for (String key : oldNameAndPath.keySet()) {
+
+				System.out.println("Key: " + key);
+				System.out.println("Value: " + oldNameAndPath.get(key));
+			}
+		}
+
 		String previousDocumentName = "";
 		try (BufferedReader br = new BufferedReader(new FileReader(fileWithNames))) {
 			String line;
 			while ((line = br.readLine()) != null) {
 
-				String[] split = line.split(" ");
+				String[] split = line.split("	");
 
 				String oldFileName = split[0];
+
+				oldFileName = oldFileName.split("/")[2];
+
 				String newFileName = "";
 				for (int i = 1; i < split.length; i++) {
 					newFileName += " " + split[i];
 				}
 
 				if (previousDocumentName.equals(oldFileName)) {
-					System.out.println(newFileName.trim() + "\t" + oldNameAndPath.get(oldFileName).trim());
+					// System.out.println(newFileName.trim() + "\t" + oldNameAndPath.get(oldFileName).trim());
 					continue;
 				} else {
 
@@ -56,8 +72,24 @@ public class FileRenameEnovia {
 					if (oldFilePath == null) {
 						System.out.println("Error file does not exists" + "\t" + oldFileName.trim());
 					} else {
-						System.out.println(newFileName.trim() + "\t" + oldNameAndPath.get(oldFileName).trim());
-						Files.move(Paths.get(oldFilePath + "\\" + oldFileName), Paths.get(oldFilePath + "\\" + newFileName));
+						newFileName = newFileName.trim();
+
+						if (filesProccessed.contains(newFileName)) {
+							System.out.println("File already proccessed: " + newFileName.trim());
+							continue;
+						} else {
+							System.out.println(newFileName.trim() + "\t" + oldNameAndPath.get(oldFileName).trim() + "\t" + oldFileName);
+							// Files.move(Paths.get(oldFilePath + "\\" + oldFileName), Paths.get("Y:\\RDM 0123 Enovia - Batch 2\\All_real_name" + "\\" +
+							// newFileName));
+							try {
+								Files.move(Paths.get(oldFilePath + "\\" + oldFileName), Paths.get(oldFilePath + "\\" + newFileName));
+							} catch (Exception ex) {
+								System.out.println("Error on file: " + newFileName.trim() + " " + ex.getMessage());
+							}
+
+							filesProccessed.add(newFileName);
+						}
+
 					}
 
 				}
@@ -77,6 +109,9 @@ public class FileRenameEnovia {
 			if (fileEntry.isDirectory()) {
 				listFilesForFolder(fileEntry);
 			} else {
+				if (oldNameAndPath.containsKey(fileEntry.getName()))
+					System.out.println("File name with same name on different paths: " + fileEntry.getName());
+
 				oldNameAndPath.put(fileEntry.getName(), fileEntry.getParent());
 				// System.out.println(fileEntry.getPath().substring((int) initialFolder.getPath().length(), (int) fileEntry.getPath().length()));
 			}
