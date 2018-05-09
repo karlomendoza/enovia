@@ -5,11 +5,9 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.HashMap;
+import java.util.Arrays;
 import java.util.HashSet;
-import java.util.Map;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -26,73 +24,61 @@ public class FileRenameEnovia {
 	public static File initialFolder = new File("Y:\\RDM 0123 Enovia - Batch 2");
 	public static File fileWithNames = new File("Y:\\RDM 0123 Enovia - Batch 2\\new 2.txt");
 
-	public static Map<String, String> oldNameAndPath = new HashMap<String, String>();
+	public static List<String> a = Arrays.asList("Y:\\RDM 0123 Enovia - Batch 2\\Chennai", "Y:\\RDM 0123 Enovia - Batch 2\\CostaRica",
+			"Y:\\RDM 0123 Enovia - Batch 2\\LakeForest\\Folder1", "Y:\\RDM 0123 Enovia - Batch 2\\LakeForest\\Folder2",
+			"Y:\\RDM 0123 Enovia - Batch 2\\LakeForest\\Folder3", "Y:\\RDM 0123 Enovia - Batch 2\\LakeForest\\Folder4",
+			"Y:\\RDM 0123 Enovia - Batch 2\\LakeForest\\Folder5", "Y:\\RDM 0123 Enovia - Batch 2\\LakeForest\\Folder6",
+			"Y:\\RDM 0123 Enovia - Batch 2\\MFCS-Hospira", "Y:\\RDM 0123 Enovia - Batch 2\\MFCS-Hospira1", "Y:\\RDM 0123 Enovia - Batch 2\\PRD_METADATA",
+			"Y:\\RDM 0123 Enovia - Batch 2\\San Diego", "Y:\\RDM 0123 Enovia - Batch 2\\San Jose");
 
-	public static Set<String> filesProccessed = new HashSet();
+	public static Set<String> filesRepeated = new HashSet<>();
 
 	public static void main(String... strings) throws IOException {
 
-		// read all structure and files from given folder
-		listFilesForFolder(initialFolder);
-		// end of read
-
-		boolean a = true;
-		if (a) {
-			for (String key : oldNameAndPath.keySet()) {
-
-				System.out.println("Key: " + key);
-				System.out.println("Value: " + oldNameAndPath.get(key));
-			}
-		}
-
-		String previousDocumentName = "";
 		try (BufferedReader br = new BufferedReader(new FileReader(fileWithNames))) {
 			String line;
 			while ((line = br.readLine()) != null) {
 
 				String[] split = line.split("	");
 
-				String oldFileName = split[0];
+				String fullOldFileName = split[0];
 
-				oldFileName = oldFileName.split("/")[2];
+				String oldFileName = fullOldFileName.split("/")[2];
 
 				String newFileName = "";
 				for (int i = 1; i < split.length; i++) {
 					newFileName += " " + split[i];
 				}
 
-				if (previousDocumentName.equals(oldFileName)) {
-					// System.out.println(newFileName.trim() + "\t" + oldNameAndPath.get(oldFileName).trim());
-					continue;
-				} else {
+				oldFileName = oldFileName.trim();
+				newFileName = newFileName.trim();
 
-					previousDocumentName = oldFileName;
+				Boolean exists = false;
+				try {
+					for (String folder : a) {
+						File f = new File(folder + "\\" + oldFileName);
+						if (f.exists()) {
+							System.out.println(folder + "	" + newFileName + "	" + fullOldFileName);
 
-					String oldFilePath = oldNameAndPath.get(oldFileName);
-					if (oldFilePath == null) {
-						System.out.println("Error file does not exists" + "\t" + oldFileName.trim());
-					} else {
-						newFileName = newFileName.trim();
-
-						if (filesProccessed.contains(newFileName)) {
-							System.out.println("File already proccessed: " + newFileName.trim());
-							continue;
-						} else {
-							System.out.println(newFileName.trim() + "\t" + oldNameAndPath.get(oldFileName).trim() + "\t" + oldFileName);
-							// Files.move(Paths.get(oldFilePath + "\\" + oldFileName), Paths.get("Y:\\RDM 0123 Enovia - Batch 2\\All_real_name" + "\\" +
-							// newFileName));
-							try {
-								Files.move(Paths.get(oldFilePath + "\\" + oldFileName), Paths.get(oldFilePath + "\\" + newFileName));
-							} catch (Exception ex) {
-								System.out.println("Error on file: " + newFileName.trim() + " " + ex.getMessage());
+							// if the same physical file name is in another folder, we can't tell which one is the correct file
+							if (exists) {
+								System.out.println("MEGA ERROR this file is in multiple folders: " + folder + "	" + newFileName + "	" + oldFileName);
 							}
 
-							filesProccessed.add(newFileName);
+							if (!filesRepeated.add(folder + "\\" + newFileName)) {
+								System.out.println("This file would be duplicated in here: " + folder + "\\" + newFileName);
+							}
+							exists = true;
 						}
-
 					}
-
+					if (!exists) {
+						System.out.println("Error file does not exists anywhere: " + newFileName + "	" + oldFileName);
+					}
+				} catch (Exception ex) {
+					System.out.println("Error on file: " + newFileName.trim() + " " + ex.getMessage());
 				}
+
+				// Files.move(Paths.get(oldFilePath + "\\" + oldFileName), Paths.get(oldFilePath + "\\" + newFileName));
 
 			}
 		} catch (FileNotFoundException e) {
@@ -103,19 +89,4 @@ public class FileRenameEnovia {
 			e.printStackTrace();
 		}
 	}
-
-	public static void listFilesForFolder(final File folder) throws IOException {
-		for (final File fileEntry : folder.listFiles()) {
-			if (fileEntry.isDirectory()) {
-				listFilesForFolder(fileEntry);
-			} else {
-				if (oldNameAndPath.containsKey(fileEntry.getName()))
-					System.out.println("File name with same name on different paths: " + fileEntry.getName());
-
-				oldNameAndPath.put(fileEntry.getName(), fileEntry.getParent());
-				// System.out.println(fileEntry.getPath().substring((int) initialFolder.getPath().length(), (int) fileEntry.getPath().length()));
-			}
-		}
-	}
-
 }
