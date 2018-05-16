@@ -21,7 +21,7 @@ public class NumberTransformation {
 	static int columnNumberOfNameField = 0;
 
 	public static void main(String... strings) throws InvalidFormatException, IOException {
-		File metaDataFiles = new File("C:\\Users\\Karlo Mendoza\\Excel Work\\ICU MEDICAL\\Enovia\\T4\\extract\\");
+		File metaDataFiles = new File("C:\\Users\\Karlo Mendoza\\Excel Work\\ICU MEDICAL\\Enovia\\random\\");
 
 		processData(metaDataFiles);
 	}
@@ -141,23 +141,19 @@ public class NumberTransformation {
 										} catch (Exception exp) {
 											//
 										}
-
 										String chart4 = String.valueOf(name.charAt(4));
 										String chart5 = String.valueOf(name.charAt(5));
 										if (chart4.matches("[a-zA-Z]") || chart5.matches("[a-zA-Z]")) {
 											int i = 4;
 											while (true) {
 												if (String.valueOf(name.charAt(i)).equals(" ") || String.valueOf(name.charAt(i)).equals("-")) {
-
 													i++;
 													while (true) {
 														try {
 															if (String.valueOf(name.charAt(i)).equals(" ") || String.valueOf(name.charAt(i)).equals("_")) {
-
 																createCell.setCellValue(name.substring(0, i));
 																create2Cell.setCellValue(name.substring(i + 1));
 																break;
-
 															}
 														} catch (Exception ex3) {
 															createCell.setCellValue(name.substring(0, i));
@@ -253,7 +249,7 @@ public class NumberTransformation {
 	 */
 	private static void setCellsValuesToRow(Row writeToRow, Row dataRow, int colsNumber) {
 		int i = -1;
-		for (int c = 2; c <= colsNumber; c++) {
+		for (int c = 2; c < colsNumber + 2; c++) {
 			i++;
 			Cell cell = dataRow.getCell((int) i);
 			if (cell != null) {

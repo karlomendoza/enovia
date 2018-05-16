@@ -22,7 +22,7 @@ import java.util.Set;
 public class FileRenameEnovia {
 
 	public static File initialFolder = new File("Y:\\RDM 0123 Enovia - Batch 2");
-	public static File fileWithNames = new File("Y:\\RDM 0123 Enovia - Batch 2\\new 2.txt");
+	public static File fileWithNames = new File("Y:\\RDM 0123 Enovia - Batch 2\\filesToRename.txt");
 
 	public static List<String> a = Arrays.asList("Y:\\RDM 0123 Enovia - Batch 2\\Chennai", "Y:\\RDM 0123 Enovia - Batch 2\\CostaRica",
 			"Y:\\RDM 0123 Enovia - Batch 2\\LakeForest\\Folder1", "Y:\\RDM 0123 Enovia - Batch 2\\LakeForest\\Folder2",
@@ -39,19 +39,23 @@ public class FileRenameEnovia {
 			String line;
 			while ((line = br.readLine()) != null) {
 
-				String[] split = line.split("	");
+				line = line.replace("\"", "");
+				String[] split = line.split("\\|\\|\\|");
 
-				String fullOldFileName = split[0];
+				String fullOldFileName = split[4];
 
 				String oldFileName = fullOldFileName.split("/")[2];
 
-				String newFileName = "";
-				for (int i = 1; i < split.length; i++) {
-					newFileName += " " + split[i];
-				}
+				String newFileName = split[3];
+
+				String id = split[0];
 
 				oldFileName = oldFileName.trim();
 				newFileName = newFileName.trim();
+
+				if (oldFileName == null || oldFileName.equals("") || oldFileName.equals("#NA")) {
+					System.out.println("Error old file name is bad: " + newFileName + " old file: " + oldFileName);
+				}
 
 				Boolean exists = false;
 				try {
