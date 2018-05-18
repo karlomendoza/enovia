@@ -21,10 +21,10 @@ import java.util.List;
  * @author Karlo Mendoza
  *
  */
-public class FileRenameEnovia {
+public class FileRenameEnovia18 {
 
-	public static File fileWithNames = new File("C:\\Users\\Karlo Mendoza\\Desktop\\enoviaRename\\renameFile1.txt");
-	public static File log = new File("C:\\Users\\Karlo Mendoza\\Desktop\\enoviaRename\\logRenameFile1.txt");
+	public static File fileWithNames = new File("C:\\Users\\Karlo Mendoza\\Desktop\\enoviaRename\\renameFile18.txt");
+	public static File log = new File("C:\\Users\\Karlo Mendoza\\Desktop\\enoviaRename\\logRenameFile18.txt");
 
 	public static List<String> paths = Arrays.asList("Y:\\RDM 0123 Enovia - Batch 2\\Chennai", "Y:\\RDM 0123 Enovia - Batch 2\\CostaRica",
 			"Y:\\RDM 0123 Enovia - Batch 2\\LakeForest\\Folder1", "Y:\\RDM 0123 Enovia - Batch 2\\LakeForest\\Folder2",
