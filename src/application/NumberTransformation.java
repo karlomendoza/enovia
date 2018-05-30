@@ -18,10 +18,10 @@ import utils.Utils;
 
 public class NumberTransformation {
 
-	static int columnNumberOfNameField = 0;
+	static int columnNumberOfNameField = 1;
 
 	public static void main(String... strings) throws InvalidFormatException, IOException {
-		File metaDataFiles = new File("C:\\Users\\Karlo Mendoza\\Excel Work\\ICU MEDICAL\\Enovia\\random\\");
+		File metaDataFiles = new File("C:\\Users\\Karlo Mendoza\\Downloads\\enoviaFinalDocNum\\");
 
 		processData(metaDataFiles);
 	}

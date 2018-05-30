@@ -19,7 +19,7 @@ public class enoviaRenameToolSplits {
 	private static final String RENAME_FILE_NAME = "renameFile";
 	private static final String BREAK_LINE = "\n";
 
-	private static final File file = new File("C:\\Users\\Karlo Mendoza\\Excel Work\\ICU MEDICAL\\Enovia\\A_EER_AttributesAndAttachedFiles_Approved.xlsx");
+	private static final File file = new File("C:\\Users\\Karlo Mendoza\\Downloads\\__Kalypso_A_EER_AttributesAndAttachedFiles.xlsx");
 
 	private static Set<String> filesToCheck = new HashSet<String>();
 
@@ -70,7 +70,7 @@ public class enoviaRenameToolSplits {
 						j++;
 						indexFile.write(id + "_AA_AA_AA_" + physicalFileName + "_AA_AA_AA_" + actualFileName + "_AA_AA_AA_" + physicalFileNameWithOutExtension
 								+ BREAK_LINE);
-						if (j % 2000 == 0) {
+						if (j % 1330000 == 0) {
 							indexFile.flush();
 							indexFile.close();
 							i++;

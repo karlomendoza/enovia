@@ -23,19 +23,16 @@ import java.util.List;
  */
 public class FileRenameEnovia {
 
-	public static File fileWithNames = new File("C:\\Users\\Karlo Mendoza\\Desktop\\enoviaRename\\renameFile1.txt");
-	public static File log = new File("C:\\Users\\Karlo Mendoza\\Desktop\\enoviaRename\\logRenameFile1.txt");
+	public static File fileWithNames = new File("C:\\Users\\Karlo Mendoza\\Desktop\\enoviaRename\\test\\renameFile1.txt");
+	public static File log = new File("C:\\Users\\Karlo Mendoza\\Desktop\\enoviaRename\\test\\logRenameFile1.txt");
 
-	public static List<String> paths = Arrays.asList("Y:\\RDM 0123 Enovia - Batch 2\\Chennai", "Y:\\RDM 0123 Enovia - Batch 2\\CostaRica",
-			"Y:\\RDM 0123 Enovia - Batch 2\\LakeForest\\Folder1", "Y:\\RDM 0123 Enovia - Batch 2\\LakeForest\\Folder2",
-			"Y:\\RDM 0123 Enovia - Batch 2\\LakeForest\\Folder3", "Y:\\RDM 0123 Enovia - Batch 2\\LakeForest\\Folder4",
-			"Y:\\RDM 0123 Enovia - Batch 2\\LakeForest\\Folder5", "Y:\\RDM 0123 Enovia - Batch 2\\LakeForest\\Folder6",
-			"Y:\\RDM 0123 Enovia - Batch 2\\MFCS-Hospira", "Y:\\RDM 0123 Enovia - Batch 2\\MFCS-Hospira1", "Y:\\RDM 0123 Enovia - Batch 2\\PRD_METADATA",
-			"Y:\\RDM 0123 Enovia - Batch 2\\San Diego", "Y:\\RDM 0123 Enovia - Batch 2\\San Jose");
+	public static String path = "D:\\RDM 0123 Enovia - Batch 2\\";
+
+	public static List<String> paths = Arrays.asList(path + "Chennai", path + "CostaRica", path + "LakeForest\\Folder1", path + "LakeForest\\Folder2",
+			path + "LakeForest\\Folder3", path + "LakeForest\\Folder4", path + "LakeForest\\Folder5", path + "LakeForest\\Folder6", path + "MFCS-Hospira",
+			path + "MFCS-Hospira1", path + "PRD_METADATA", path + "San Diego", path + "San Jose");
 
 	private static final String BREAK_LINE = "\n";
-
-	private static boolean onlyValidate = true;
 
 	public static void main(String... strings) throws IOException {
 
