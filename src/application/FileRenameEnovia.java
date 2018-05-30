@@ -23,14 +23,17 @@ import java.util.List;
  */
 public class FileRenameEnovia {
 
-	public static File fileWithNames = new File("C:\\Users\\Karlo Mendoza\\Desktop\\enoviaRename\\test\\renameFile1.txt");
-	public static File log = new File("C:\\Users\\Karlo Mendoza\\Desktop\\enoviaRename\\test\\logRenameFile1.txt");
+	/** need to change this two with correct paths **/
+	public static String path_to_rename_file = "C:\\Users\\Karlo Mendoza\\Desktop\\enoviaRename\\";
+	public static String path_to_files = "D:\\RDM 0123 Enovia - Batch 2\\";
 
-	public static String path = "D:\\RDM 0123 Enovia - Batch 2\\";
+	public static File fileWithNames = new File(path_to_rename_file + "renameFile1.txt");
+	public static File log = new File(path_to_rename_file + "logRenameFile1.txt");
 
-	public static List<String> paths = Arrays.asList(path + "Chennai", path + "CostaRica", path + "LakeForest\\Folder1", path + "LakeForest\\Folder2",
-			path + "LakeForest\\Folder3", path + "LakeForest\\Folder4", path + "LakeForest\\Folder5", path + "LakeForest\\Folder6", path + "MFCS-Hospira",
-			path + "MFCS-Hospira1", path + "PRD_METADATA", path + "San Diego", path + "San Jose");
+	public static List<String> paths = Arrays.asList(path_to_files + "Chennai", path_to_files + "CostaRica", path_to_files + "LakeForest\\Folder1",
+			path_to_files + "LakeForest\\Folder2", path_to_files + "LakeForest\\Folder3", path_to_files + "LakeForest\\Folder4",
+			path_to_files + "LakeForest\\Folder5", path_to_files + "LakeForest\\Folder6", path_to_files + "MFCS-Hospira", path_to_files + "MFCS-Hospira1",
+			path_to_files + "PRD_METADATA", path_to_files + "San Diego", path_to_files + "San Jose");
 
 	private static final String BREAK_LINE = "\n";
 
