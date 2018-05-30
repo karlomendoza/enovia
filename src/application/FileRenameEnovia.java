@@ -24,16 +24,13 @@ import java.util.List;
 public class FileRenameEnovia {
 
 	/** need to change this two with correct paths **/
-	public static String path_to_rename_file = "C:\\Users\\Karlo Mendoza\\Desktop\\enoviaRename\\";
-	public static String path_to_files = "D:\\RDM 0123 Enovia - Batch 2\\";
+	public static String path_to_rename_file = "C:\\Users\\Karlo Mendoza\\Desktop\\enoviaRename\\test\\";
+	public static String path_to_files = "C:\\Users\\Karlo Mendoza\\Downloads\\";
 
 	public static File fileWithNames = new File(path_to_rename_file + "renameFile1.txt");
 	public static File log = new File(path_to_rename_file + "logRenameFile1.txt");
 
-	public static List<String> paths = Arrays.asList(path_to_files + "Chennai", path_to_files + "CostaRica", path_to_files + "LakeForest\\Folder1",
-			path_to_files + "LakeForest\\Folder2", path_to_files + "LakeForest\\Folder3", path_to_files + "LakeForest\\Folder4",
-			path_to_files + "LakeForest\\Folder5", path_to_files + "LakeForest\\Folder6", path_to_files + "MFCS-Hospira", path_to_files + "MFCS-Hospira1",
-			path_to_files + "PRD_METADATA", path_to_files + "San Diego", path_to_files + "San Jose");
+	public static List<String> paths = Arrays.asList(path_to_files + "Chennai");
 
 	private static final String BREAK_LINE = "\n";
 
